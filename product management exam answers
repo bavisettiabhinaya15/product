@@ -1,0 +1,335 @@
+!st question answer : 
+
+Title:
+
+Tool to Check Container Image Vulnerabilities
+
+Background:
+
+Companies use container images to run applications. These images include not just the app, but also the software it depends on. Sometimes, they contain known security problems (vulnerabilities).
+
+The Problem:
+
+As a user, I have thousands of container images. I want to:
+
+Know which images have security problems
+
+Understand how serious the problems are (Critical, High, Medium, Low)
+
+Focus on fixing the most serious ones first
+
+Take quick actions to fix or ignore them
+
+
+
+---
+
+What the Product Should Do (Main Features):
+
+1. Dashboard (Overview Screen)
+
+Show total images
+
+Show how many have problems
+
+Show how serious the problems are
+
+
+
+2. Image List Table
+
+List all container images
+
+Show how many vulnerabilities each image has
+
+Show if the image is safe or needs fixing
+
+Have buttons to take action like "Fix", "Ignore", or "View Details"
+
+
+
+3. Filters and Search
+
+Help users quickly find specific images
+
+Filter by severity, date, name, etc.
+
+
+
+4. Detailed View of One Image
+
+Show the exact problems (like CVE ID, description)
+
+Tell if there is a fix available
+
+Give options to fix or ignore
+
+
+
+5. Bulk Actions
+
+Allow fixing or ignoring multiple images at once
+
+Option to download the report
+
+
+
+6. Notifications
+
+Alert the user when new serious problems are found
+
+
+
+
+
+---
+
+Rough Sketch of the Screens (Low-Fidelity Wireframes):
+
+Dashboard:
+
+-----------------------------------------
+| Vulnerability Scanner Dashboard       |
+-----------------------------------------
+| Total Images: 5,000                   |
+| Vulnerable Images: 1,200              |
+| Critical: 100 | High: 300 | Medium: 500 |
+-----------------------------------------
+| Filters: [Severity] [Name] [Date]     |
+-----------------------------------------
+| Image Name | Critical | High | Status | Actions |
+|------------|----------|------|--------|---------|
+| nginx      |    3     |  1   | Fix    | [View]  |
+| backend    |    0     |  2   | Fix    | [Fix]   |
+-----------------------------------------
+
+Image Details:
+
+-------------------------------
+| Image: nginx:1.19           |
+| Last Scanned: Apr 16, 2025  |
+-------------------------------
+| CVE ID | Severity | Fix? | Description |
+|--------|----------|------|-------------|
+| CVE-123| Critical | Yes  | …           |
+| CVE-456| High     | No   | …           |
+-------------------------------
+[Fix Now] [Ignore] [Rescan]
+
+
+---
+
+Development Tasks (for the Tech Team):
+
+1. Set Up Scanning Tool
+
+Use tools like Trivy or Clair to find vulnerabilities
+
+
+
+2. Build Database
+
+Store image info and vulnerabilities
+
+
+
+3. Create Backend APIs
+
+For scanning, filters, and actions like fix or ignore
+
+
+
+4. Design Frontend (UI)
+
+Dashboard, filters, tables, and details screen
+
+
+
+5. Add Login & Permissions
+
+Only allow authorized users to see or act
+
+
+
+6. Add Alerts
+
+Notify users when serious issues are found.
+
+
+2nd question answer :
+
+
+Title: Kubernetes Security Scan
+
+What You Need to Do:
+
+1. Install a local Kubernetes cluster using tools like:
+
+Minikube
+
+Kind (Kubernetes IN Docker)
+
+K3s
+
+
+
+2. Install a Kubernetes security scanner, such as:
+
+Kubescape (recommended and easy to use)
+
+
+
+3. Run the security scan using Kubescape on your cluster
+
+
+4. Save the findings in a JSON file and submit it.
+
+
+
+
+---
+
+Steps to Follow (Simple Guide):
+
+Step 1: Install Minikube (example)
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+minikube start
+
+Step 2: Install Kubescape
+
+curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | /bin/bash
+
+Step 3: Run Kubescape and Save Output to JSON
+
+kubescape scan framework nsa --output json --output-file k8s-findings.json
+
+> This will run a security scan using NSA guidelines and save the results to a file named k8s-findings.json.
+
+
+
+Step 4: Submit the File
+Once the scan is complete, locate the k8s-findings.json file and upload it as your deliverable.
+
+
+3rd question answer : 
+Deploy GoLang App with Date & Time on Kubernetes
+
+
+---
+
+Step 1: Create a GoLang App and Push to DockerHub
+
+1.1 Write a GoLang Program
+
+Create a file named main.go:
+
+package main
+
+import (
+    "fmt"
+    "net/http"
+    "time"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+    currentTime := time.Now().Format("2006-01-02 15:04:05")
+    fmt.Fprintf(w, "Current Date & Time: %s", currentTime)
+}
+
+func main() {
+    http.HandleFunc("/", handler)
+    http.ListenAndServe(":8080", nil)
+}
+
+1.2 Create a Dockerfile
+
+# Use Go base image
+FROM golang:1.20
+
+# Set working directory
+WORKDIR /app
+
+# Copy Go code
+COPY . .
+
+# Build the Go binary
+RUN go build -o datetime-app
+
+# Expose port and run the app
+EXPOSE 8080
+CMD ["./datetime-app"]
+
+1.3 Build and Push to DockerHub
+
+# Build Docker image
+docker build -t yourdockerhubusername/datetime-app .
+
+# Login to DockerHub
+docker login
+
+# Push image
+docker push yourdockerhubusername/datetime-app
+
+
+---
+
+Step 2: Kubernetes Deployment with 2 Replicas
+
+2.1 Create a deployment YAML file (deployment.yaml)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datetime-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: datetime
+  template:
+    metadata:
+      labels:
+        app: datetime
+    spec:
+      containers:
+      - name: datetime-container
+        image: yourdockerhubusername/datetime-app
+        ports:
+        - containerPort: 8080
+
+2.2 Create a service YAML file (service.yaml)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: datetime-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: datetime
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+
+---
+
+Step 3: Expose the App to the Internet
+
+Use a platform like Qwiklabs, Play with Kubernetes, or GCP.
+
+Apply the configuration:
+
+
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+Wait a few moments and run:
+
+
+kubectl get svc
+
+Look for the EXTERNAL-IP under datetime-service. Open that IP in a browser — it will show the current date and time.
